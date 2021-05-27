@@ -1,17 +1,21 @@
-import {request} from './require'
+import { request } from './require'
 
-export function getDetail(iid){
+export function getDetail(iid) {
   return request({
-    url:'/detail',
-    params:{
+    url: '/detail',
+    params: {
       iid
     }
 
   })
 }
-
-export class Goods{
-  constructor(itemInfom,columns,services){
+export function getRecommend() {
+  return request({
+    url: '/recommend'
+  })
+}
+export class Goods {
+  constructor(itemInfom, columns, services) {
     this.title = itemInfom.title
     this.desc = itemInfom.desc
     this.newPrice = itemInfom.price
@@ -23,8 +27,8 @@ export class Goods{
   }
 }
 
-export class Shop{
-  constructor(shopInfo){
+export class Shop {
+  constructor(shopInfo) {
     this.logo = shopInfo.shopLogo;
     this.name = shopInfo.name
     this.fans = shopInfo.cFans

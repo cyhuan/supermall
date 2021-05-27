@@ -1,13 +1,37 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav"></detail-nav-bar>
-    <scroll class="content" ref="scroll">
+    <detail-nav-bar
+      class="detail-nav"
+      @titleClick="titleClick"
+      ref="nav"
+    ></detail-nav-bar>
+    <scroll
+      class="content"
+      ref="scroll"
+      @scroll="contentScroll"
+      :probe-type="3"
+    >
+      <ul>
+        <li v-for="(item, index) in $store.state.cartList" :key="index">
+          {{ item }}
+        </li>
+      </ul>
       <detail-swiper :topImages="topImages"></detail-swiper>
       <detail-base-info :goods="goods"></detail-base-info>
       <detail-shop-info :shop="shop"></detail-shop-info>
-      <detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"></detail-goods-info>
-      <detail-param-info :param-info="paramInfo"></detail-param-info>
+      <detail-goods-info
+        :detail-info="detailInfo"
+        @imageLoad="imageLoad"
+        ref="params"
+      ></detail-goods-info>
+      <detail-param-info
+        ref="comment"
+        :param-info="paramInfo"
+      ></detail-param-info>
+      <detail-comment-info ref="recommend" :comment-info="commentInfo" />
     </scroll>
+    <detail-buttom-bar @addCart="addToCart" />
+    <back-top @click.native="backTop" v-show="isShowBackTop" />
   </div>
 </template>
 
@@ -18,11 +42,13 @@ import DetailBaseInfo from "./childDetail/DetailBaseInfo";
 import DetailShopInfo from "./childDetail/DetailShopInfo";
 import DetailGoodsInfo from "./childDetail/DetailGoodsInfo";
 import DetailParamInfo from "./childDetail/DetailParamInfo";
+import DetailCommentInfo from "./childDetail/DetailCommentInfo";
+import DetailButtomBar from "./childDetail/DetailButtomBar";
+import BackTop from "components/content/backTop/BackTop";
 
 import Scroll from "components/common/scroll/Scroll";
 
 import { getDetail, Goods, Shop, GoodsParam } from "network/detail";
-
 export default {
   name: "Detail",
   components: {
@@ -33,6 +59,9 @@ export default {
     DetailGoodsInfo,
     DetailParamInfo,
     Scroll,
+    DetailCommentInfo,
+    DetailButtomBar,
+    BackTop,
   },
   data() {
     return {
@@ -42,6 +71,10 @@ export default {
       shop: {},
       detailInfo: {},
       paramInfo: {},
+      commentInfo: {},
+      themeTopYs: [],
+      currentIndex: 0,
+      isShowBackTop: false,
     };
   },
   created() {
@@ -51,7 +84,6 @@ export default {
     // 2根据iid请求详情数据
     getDetail(this.iid).then((res) => {
       // 1.获取顶部的图片轮播数据
-      console.log(res);
       const data = res.result;
       this.topImages = data.itemInfo.topImages;
 
@@ -72,11 +104,53 @@ export default {
         data.itemParams.info,
         data.itemParams.rule
       );
+      if (data.rate.cRate !== 0) {
+        this.commentInfo = data.rate.list[0];
+      }
     });
   },
   methods: {
     imageLoad() {
       this.$refs.scroll.refresh();
+      this.themeTopYs = [];
+      this.themeTopYs.push(0);
+      this.themeTopYs.push(this.$refs.params.$el.offsetTop);
+      this.themeTopYs.push(this.$refs.comment.$el.offsetTop);
+      this.themeTopYs.push(this.$refs.recommend.$el.offsetTop);
+      // console.log(this.themeTopYs);
+    },
+    titleClick(index) {
+      this.$refs.scroll.scrollTo(0, -this.themeTopYs[index], 100);
+    },
+    contentScroll(position) {
+      const positionY = -position.y;
+      let length = this.themeTopYs.length;
+      for (let i = 0; i < length; i++) {
+        if (
+          this.currentIndex !== i &&
+          ((i < length - 1 &&
+            positionY > this.themeTopYs[i] &&
+            positionY < this.themeTopYs[i + 1]) ||
+            (i === length - 1 && positionY > this.themeTopYs[i]))
+        ) {
+          this.currentIndex = i;
+          // console.log(this.currentIndex);
+          this.$refs.nav.currentIndex = this.currentIndex;
+        }
+      }
+      this.isShowBackTop = -position.y > 1000;
+    },
+    backTop() {
+      this.$refs.scroll.scrollTo(0, 0, 200);
+    },
+    addToCart() {
+      const product = {};
+      product.image = this.topImages[0];
+      product.title = this.goods.title;
+      product.desc = this.goods.desc;
+      product.price = this.goods.newPrice;
+      product.iid = this.iid;
+      this.$store.dispatch("addCart", product);
     },
   },
 };

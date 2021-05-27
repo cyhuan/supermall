@@ -1,17 +1,17 @@
 <template>
   <div class="goods-item" @click="itemClick">
-    <img :src="goodsItem.show.img" alt @load="imageLoad" />
+    <img :src="goodsItem.show.img" alt="" @load="imageLoad" />
     <div class="goods-info">
-      <p>{{goodsItem.title}}</p>
-      <span class="price">{{goodsItem.price}}</span>
-      <span class="collect">{{goodsItem.cfav}}</span>
+      <p>{{ goodsItem.title }}</p>
+      <span class="price">{{ goodsItem.price }}</span>
+      <span class="collect">{{ goodsItem.cfav }}</span>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: "GoodsListItem",
+  name: "GoodListItem",
   props: {
     goodsItem: {
       type: Object,
@@ -22,7 +22,11 @@ export default {
   },
   methods: {
     imageLoad() {
-      this.$bus.$emit("itemImageLoad");
+      if (this.$route.path.indexOf("/home") != -1) {
+        this.$bus.$emit("itemImageLoad");
+      } else if (this.$route.path.indexOf("/detail")) {
+        this.$bus.$emit("detailitemImageLoad");
+      }
     },
     itemClick() {
       this.$router.push("/detail/" + this.goodsItem.iid);
@@ -37,10 +41,12 @@ export default {
   position: relative;
   width: 48%;
 }
+
 .goods-item img {
   width: 100%;
   border-radius: 5px;
 }
+
 .goods-info {
   font-size: 12px;
   position: absolute;
@@ -50,19 +56,23 @@ export default {
   overflow: hidden;
   text-align: center;
 }
+
 .goods-info p {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-bottom: 3px;
 }
+
 .goods-info .price {
   color: var(--color-high-text);
   margin-right: 20px;
 }
+
 .goods-info .collect {
   position: relative;
 }
+
 .goods-info .collect::before {
   content: "";
   position: absolute;
