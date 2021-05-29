@@ -11,11 +11,6 @@
       @scroll="contentScroll"
       :probe-type="3"
     >
-      <ul>
-        <li v-for="(item, index) in $store.state.cartList" :key="index">
-          {{ item }}
-        </li>
-      </ul>
       <detail-swiper :topImages="topImages"></detail-swiper>
       <detail-base-info :goods="goods"></detail-base-info>
       <detail-shop-info :shop="shop"></detail-shop-info>
@@ -32,6 +27,7 @@
     </scroll>
     <detail-buttom-bar @addCart="addToCart" />
     <back-top @click.native="backTop" v-show="isShowBackTop" />
+    <toast />
   </div>
 </template>
 
@@ -47,8 +43,10 @@ import DetailButtomBar from "./childDetail/DetailButtomBar";
 import BackTop from "components/content/backTop/BackTop";
 
 import Scroll from "components/common/scroll/Scroll";
+import Toast from "components/common/toast/Toast";
 
 import { getDetail, Goods, Shop, GoodsParam } from "network/detail";
+import { mapActions } from "vuex";
 export default {
   name: "Detail",
   components: {
@@ -62,6 +60,7 @@ export default {
     DetailCommentInfo,
     DetailButtomBar,
     BackTop,
+    Toast,
   },
   data() {
     return {
@@ -110,6 +109,7 @@ export default {
     });
   },
   methods: {
+    ...mapActions(["addCart"]),
     imageLoad() {
       this.$refs.scroll.refresh();
       this.themeTopYs = [];
@@ -150,7 +150,12 @@ export default {
       product.desc = this.goods.desc;
       product.price = this.goods.newPrice;
       product.iid = this.iid;
-      this.$store.dispatch("addCart", product);
+      this.addCart(product).then((res) => {
+        console.log(res);
+      });
+      // this.$store.dispatch("addCart", product).then((res) => {
+      //   console.log(res);
+      // });
     },
   },
 };

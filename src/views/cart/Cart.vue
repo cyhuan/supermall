@@ -7,18 +7,23 @@
 
     <!-- 列表 -->
     <cart-list />
+
+    <!-- 底部汇总 -->
+    <cart-buttom-bar />
   </div>
 </template>
 
 <script>
 import NavBar from "components/common/navbar/NavBar";
 import CartList from "./childComps/CartList";
+import CartButtomBar from "./childComps/CartButtomBar";
 import { mapGetters } from "vuex";
 export default {
   name: "Cart",
   components: {
     NavBar,
     CartList,
+    CartButtomBar,
   },
   computed: {
     ...mapGetters(["cartLength"]),
